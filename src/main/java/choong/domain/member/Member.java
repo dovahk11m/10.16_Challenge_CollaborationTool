@@ -28,6 +28,8 @@ public class Member {
     private String email;
     @Column(nullable = false)
     private String password;
+    @Column(unique = true)
+    private String verificationToken; //1회용 인증토큰
 
     //ENUM (role, status, type)
     @Enumerated(EnumType.STRING)
@@ -48,11 +50,13 @@ public class Member {
     public Member(
             String nickname,
             String email,
-            String password
+            String password,
+            String verificationToken
     ) {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
+        this.verificationToken = verificationToken;
         //기본값
         this.role = MemberRole.USER;
         this.status = MemberStatus.INACTIVE;
@@ -67,6 +71,14 @@ public class Member {
     //닉네임 수정
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    //계정 활성화
+    public void activate() {
+        if (this.status == MemberStatus.INACTIVE) {
+            this.status = MemberStatus.ACTIVE;
+            this.verificationToken = null; // 토큰 제거
+        }
     }
 
     //시간 포맷

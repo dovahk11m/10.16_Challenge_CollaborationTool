@@ -1,4 +1,4 @@
-package choong.domain.member.memberDTO;
+package choong.domain.member.memberLogin;
 
 import choong.domain.member.Member;
 import choong.domain.member.memberEnum.MemberRole;
@@ -7,7 +7,7 @@ import choong.domain.member.memberEnum.MemberType;
 import lombok.Getter;
 
 @Getter
-public class SignupResponse {
+public class LoginResponse {
 
     private final Long id;
     private final String email;
@@ -15,14 +15,17 @@ public class SignupResponse {
     private final MemberRole role;
     private final MemberStatus status;
     private final MemberType type;
+    //토큰부여
+    private final String token;
 
-    private SignupResponse(
+    private LoginResponse(
             Long id,
             String email,
             String nickname,
             MemberRole role,
             MemberStatus status,
-            MemberType type
+            MemberType type,
+            String token
     ) {
         this.id = id;
         this.email = email;
@@ -30,16 +33,18 @@ public class SignupResponse {
         this.role = role;
         this.status = status;
         this.type = type;
+        this.token = token;
     }
 
-    public static SignupResponse from(Member member){
-        return new SignupResponse(
+    public static LoginResponse of(Member member, String token){
+        return new LoginResponse(
                 member.getId(),
                 member.getEmail(),
                 member.getNickname(),
                 member.getRole(),
                 member.getStatus(),
-                member.getType()
+                member.getType(),
+                token
         );
     }
 }

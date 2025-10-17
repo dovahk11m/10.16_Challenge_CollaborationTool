@@ -8,4 +8,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     //중복검사
     Optional<Member> findByEmail(String email);
     Optional<Member> findByNickname(String nickname);
+    Optional<Member> findByVerificationToken(String verificationToken);
 }

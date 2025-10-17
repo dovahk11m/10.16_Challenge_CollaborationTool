@@ -1,4 +1,4 @@
-package choong.domain.member.memberUtil;
+package choong.domain.member.memberHelper;
 
 import java.util.List;
 import java.util.Random;

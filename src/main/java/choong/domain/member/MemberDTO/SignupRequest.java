@@ -1,4 +1,4 @@
-package choong.domain.member.memberDTO;
+package choong.domain.member.MemberDTO;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
