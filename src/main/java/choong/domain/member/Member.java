@@ -30,6 +30,9 @@ public class Member {
     private String password;
     @Column(unique = true)
     private String verificationToken; //1회용 인증토큰
+    
+    private String passwordResetToken; // 비밀번호 재설정 토큰
+    private LocalDateTime passwordResetTokenExpiresAt; // 재설정 토큰 만료 시간
 
     //ENUM (role, status, type)
     @Enumerated(EnumType.STRING)
@@ -79,6 +82,12 @@ public class Member {
             this.status = MemberStatus.ACTIVE;
             this.verificationToken = null; // 토큰 제거
         }
+    }
+
+    // 비밀번호 재설정 토큰 생성
+    public void generatePasswordResetToken(String token) {
+        this.passwordResetToken = token;
+        this.passwordResetTokenExpiresAt = LocalDateTime.now().plusHours(1); // 1시간 후 만료
     }
 
     //시간 포맷

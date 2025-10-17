@@ -2,6 +2,7 @@ package choong.domain.member.memberLogin;
 
 import choong.common.token.JwtProvider;
 import choong.domain.member.Member;
+import choong.domain.member.memberEnum.MemberStatus;
 import choong.domain.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
@@ -24,6 +25,9 @@ public class LoginLocal implements LoginStrategy {
                 member.getPassword()
         )) {
             throw new IllegalArgumentException("이메일 또는 비밀번호 불일치");
+        }
+        if (member.getStatus() != MemberStatus.ACTIVE) {
+            throw new IllegalStateException("활성화되지 않은 계정");
         }
         String token = jwtProvider.createToken(
                 member.getEmail(),

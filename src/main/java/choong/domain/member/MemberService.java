@@ -1,9 +1,15 @@
 package choong.domain.member;
 
-import choong.domain.member.MemberDTO.SignupRequest;
-import choong.domain.member.MemberDTO.SignupResponse;
+import choong.domain.member.MemberSignup.NicknameGenerator;
+import choong.domain.member.MemberSignup.SignupRequest;
+import choong.domain.member.MemberSignup.SignupResponse;
+import choong.domain.member.memberEvent.PasswordResetEvent;
 import choong.domain.member.memberEvent.SignupEvent;
-import choong.domain.member.memberHelper.NicknameGenerator;
+import choong.domain.member.memberLogin.LoginRequest;
+import choong.domain.member.memberLogin.LoginResponse;
+import choong.domain.member.memberLogin.LoginStrategy;
+import choong.domain.member.memberLogin.LoginStrategyFactory;
+import choong.domain.member.memberPassword.PasswordConfirmRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -11,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -20,10 +27,17 @@ import java.util.UUID;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginStrategyFactory loginStrategyFactory;
     private final ApplicationEventPublisher eventPublisher;
 
+    //로그인
+    public LoginResponse login(String type, LoginRequest request){
+        LoginStrategy strategy = loginStrategyFactory.findStrategy(type);
+        return strategy.login(request);
+    }
+
     //회원가입
-    public SignupResponse signUp(
+    public SignupResponse signup(
             SignupRequest request
     ) {
         if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -61,4 +75,31 @@ public class MemberService {
         log.info("[이메일 가입인증 성공 memberId: {}, email: {}]", member.getId(), member.getEmail());
     }
 
+    // 비밀번호 재설정 요청
+    public void issuePasswordReset(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        String resetToken = UUID.randomUUID().toString();
+        member.generatePasswordResetToken(resetToken);
+
+        // 비밀번호 재설정 요청 이벤트 발행
+        eventPublisher.publishEvent(new PasswordResetEvent(member));
+        log.info("[비밀번호 재설정 요청] memberId: {}, email: {}", member.getId(), member.getEmail());
+    }
+
+    // 비밀번호 재설정
+    public void resetPassword(PasswordConfirmRequest request) {
+        Member member = memberRepository.findByPasswordResetToken(request.getToken())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 재설정 토큰입니다."));
+
+        // 토큰 만료 시간 검증
+        if (member.getPasswordResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("만료된 재설정 토큰입니다.");
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+        member.updatePassword(encodedNewPassword);
+        log.info("[비밀번호 재설정 성공] memberId: {}", member.getId());
+    }
 }

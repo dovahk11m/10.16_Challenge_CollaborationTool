@@ -1,4 +1,4 @@
-package choong.common.util;
+package choong.common;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

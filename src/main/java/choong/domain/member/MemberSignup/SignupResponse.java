@@ -1,4 +1,4 @@
-package choong.domain.member.MemberDTO;
+package choong.domain.member.MemberSignup;
 
 import choong.domain.member.Member;
 import choong.domain.member.memberEnum.MemberRole;
